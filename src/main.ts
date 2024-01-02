@@ -68,7 +68,9 @@ export const main = async () => {
         },
       });
 
-      const bets = users.map((user) => http.post("/bet", user));
+      const bets = users.map((user) =>
+        http.post("/bet", { user, bet: matchedStrategyName })
+      );
       await Promise.all(bets);
     }
   });
