@@ -1,12 +1,8 @@
-import { BETS, Color } from "@/types";
+import { Color, Strategy, StrategyName } from "@/types";
 import { API } from "@/entities";
 import { PrismaClient } from "@prisma/client";
 import { http } from "./lib";
-
-const CREDENTIALS = {
-  email: "felipeteste@gmail.com",
-  password: "123456789",
-};
+import { CREDENTIALS, BETS, STRATEGIES } from "./constants";
 
 const prisma = new PrismaClient();
 
@@ -14,7 +10,7 @@ export const main = async () => {
   const api = new API();
   const colors: Color[] = [];
 
-  const { success, balance } = await api.authenticate(CREDENTIALS);
+  const { success } = await api.authenticate(CREDENTIALS);
 
   if (!success) {
     return "could not authenticate";
@@ -41,25 +37,37 @@ export const main = async () => {
 
     colors.push(color);
 
-    if (colors.length >= 3) {
-      const [antipenultimateColor, penultimateColor, lastColor] = [
-        ...colors,
-      ].reverse();
+    const entries = Object.entries(STRATEGIES) as Array<
+      [StrategyName, Strategy]
+    >;
 
+    const matchedStrategyName = entries.reduce(
+      (acc, [strategyName, [strategy]]) => {
+        const results = colors.slice(
+          Math.max(colors.length - strategy.length, 0)
+        );
+
+        const isEqual = results.toString() === strategy.toString();
+
+        if (isEqual) {
+          return strategyName as StrategyName;
+        }
+
+        return acc;
+      },
+      "" as StrategyName
+    );
+
+    if (matchedStrategyName) {
       const users = await prisma.user.findMany({
         where: {
           isActive: true,
           config: {
-            strategy: {
-              antipenultimateColor,
-              penultimateColor,
-              lastColor,
-            },
+            strategy: matchedStrategyName,
           },
         },
       });
 
-      // TO-DO: Make request to /bet route
       const bets = users.map((user) => http.post("/bet", user));
       await Promise.all(bets);
     }

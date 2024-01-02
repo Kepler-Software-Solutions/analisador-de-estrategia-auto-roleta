@@ -54,31 +54,16 @@ enum Color {
   green
 }
 
-model Strategy {
-  strategyId String @id @default(uuid())
-
-  name                 String
-  antipenultimateColor Color
-  penultimateColor     Color
-  lastColor            Color
-  resultColor          Color
-
-  configs Config[]
-
-  @@map("strategies")
-}
-
 model Config {
   userId     String @id
-  strategyId String
 
+  strategy String
   entry    Int
   gales    Int
   stopWin  Int
   stopLoss Int
 
   user     User     @relation(fields: [userId], references: [userId])
-  strategy Strategy @relation(fields: [strategyId], references: [strategyId])
 
   @@map("configs")
 }
