@@ -15,4 +15,4 @@ export const STRATEGIES: Record<StrategyName, Strategy> = {
   "Hora do show": [[Color.BLACK, Color.BLACK, Color.RED], Color.RED],
   "Roleta Super": [[Color.RED, Color.RED, Color.BLACK], Color.BLACK],
   "Tudo ou nada": [[Color.RED, Color.BLACK, Color.BLACK], Color.RED],
-};
+} as const;
