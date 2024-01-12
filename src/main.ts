@@ -1,8 +1,11 @@
-import { Color, Strategy, StrategyName } from "@/types";
-import { API } from "@/entities";
-import { PrismaClient } from "@prisma/client";
-import { http } from "./lib";
-import { CREDENTIALS, BETS, STRATEGIES } from "./constants";
+import { Color, Strategy, StrategyName } from '@/types';
+import { API } from '@/entities';
+import { PrismaClient, User } from '@prisma/client';
+import { http } from './lib';
+import { CREDENTIALS, BETS, STRATEGIES } from './constants';
+import { config } from 'dotenv';
+
+config();
 
 const prisma = new PrismaClient();
 
@@ -13,7 +16,7 @@ export const main = async () => {
   const { success } = await api.authenticate(CREDENTIALS);
 
   if (!success) {
-    return "could not authenticate";
+    return 'could not authenticate';
   }
 
   const getColorByNumber = (result: number): Color | null => {
@@ -23,7 +26,7 @@ export const main = async () => {
       }
     }
 
-    return null; // Retorna null se não for encontrada nenhuma cor
+    return null;
   };
 
   await api.connect();
@@ -32,7 +35,7 @@ export const main = async () => {
     const color = getColorByNumber(Number(result));
 
     if (!color) {
-      throw new Error("Color not found");
+      throw new Error('Color not found');
     }
 
     colors.push(color);
@@ -55,11 +58,13 @@ export const main = async () => {
 
         return acc;
       },
-      "" as StrategyName
+      '' as StrategyName
     );
 
+    console.log({ matchedStrategyName });
+
     if (matchedStrategyName) {
-      const users = await prisma.user.findMany({
+      const users: User[] = await prisma.user.findMany({
         where: {
           isActive: true,
           config: {
@@ -69,11 +74,14 @@ export const main = async () => {
       });
 
       const bets = users.map((user) =>
-        http.post("/bet", { user, bet: matchedStrategyName })
+        http.post('/bet', { user, bet: matchedStrategyName })
       );
+
       await Promise.all(bets);
+
+      console.log({ users: users.map((user) => user.email) });
     }
   });
 };
 
-main().then(() => console.log("Server is running"));
+main().then(console.log);

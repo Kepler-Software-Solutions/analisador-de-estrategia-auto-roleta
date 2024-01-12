@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "tsx src/main.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,11 +16,13 @@
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
     "axios": "^1.6.3",
+    "dotenv": "^16.3.1",
     "ws": "^8.16.0"
   }
 }
