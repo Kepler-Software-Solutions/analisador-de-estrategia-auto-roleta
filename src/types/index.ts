@@ -1,2 +1,1 @@
-export * from "./roulette";
-export * from "./strategy";
+export * from './strategy';

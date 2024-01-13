@@ -34,6 +34,8 @@ export const main = async () => {
   api.getRealtimeResults(async (result) => {
     const color = getColorByNumber(Number(result));
 
+    console.log({ color });
+
     if (!color) {
       throw new Error('Color not found');
     }
@@ -65,23 +67,31 @@ export const main = async () => {
 
     if (matchedStrategyName) {
       const users: User[] = await prisma.user.findMany({
+        include: {
+          credentials: true,
+          config: true,
+          bets: true,
+          balanceTracks: true,
+        },
         where: {
           isActive: true,
-          config: {
-            strategy: matchedStrategyName,
-          },
+          // config: {
+          //   strategy: matchedStrategyName,
+          // },
         },
       });
 
       const bets = users.map((user) =>
-        http.post('/bet', { user, bet: matchedStrategyName })
+        http.post('/bet', { user, bet: STRATEGIES[matchedStrategyName][1] })
       );
 
-      await Promise.all(bets);
-
       console.log({ users: users.map((user) => user.email) });
+
+      await Promise.all(bets);
     }
   });
 };
 
-main().then(console.log);
+main();
+
+while (true);

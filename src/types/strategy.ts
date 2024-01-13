@@ -1,9 +1,9 @@
-import { STRATEGIES_NAMES } from "@/constants";
+import { STRATEGIES_NAMES } from '@/constants';
 
 export enum Color {
-  RED = "red",
-  BLACK = "black",
-  GREEN = "green",
+  RED = 'red',
+  BLACK = 'black',
+  GREEN = 'green',
 }
 
 export type StrategyName = (typeof STRATEGIES_NAMES)[number];
