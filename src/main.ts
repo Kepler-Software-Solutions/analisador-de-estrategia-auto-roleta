@@ -1,9 +1,10 @@
-import { Color, Strategy, StrategyName } from '@/types';
+import { Color, Strategy, StrategyName, User } from '@/types';
 import { API } from '@/entities';
-import { PrismaClient, User } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { http } from './lib';
 import { CREDENTIALS, BETS, STRATEGIES } from './constants';
 import { config } from 'dotenv';
+import { bet } from './lib/bet';
 
 config();
 
@@ -31,7 +32,7 @@ export const main = async () => {
 
   await api.connect();
 
-  api.getRealtimeResults(async (result) => {
+  await api.onNextGameState('GAME_RESOLVED', async (result) => {
     const color = getColorByNumber(Number(result));
 
     console.log({ color });
@@ -46,7 +47,7 @@ export const main = async () => {
       [StrategyName, Strategy]
     >;
 
-    const matchedStrategyName = entries.reduce(
+    let matchedStrategyName = entries.reduce(
       (acc, [strategyName, [strategy]]) => {
         const results = colors.slice(
           Math.max(colors.length - strategy.length, 0)
@@ -63,10 +64,12 @@ export const main = async () => {
       '' as StrategyName
     );
 
+    matchedStrategyName = 'Dinheiro Easy';
+
     console.log({ matchedStrategyName });
 
     if (matchedStrategyName) {
-      const users: User[] = await prisma.user.findMany({
+      const users = (await prisma.user.findMany({
         include: {
           credentials: true,
           config: true,
@@ -79,10 +82,10 @@ export const main = async () => {
           //   strategy: matchedStrategyName,
           // },
         },
-      });
+      })) as User[];
 
       const bets = users.map((user) =>
-        http.post('/bet', { user, bet: STRATEGIES[matchedStrategyName][1] })
+        bet({ user, bet: { color: STRATEGIES[matchedStrategyName][1] } })
       );
 
       console.log({ users: users.map((user) => user.email) });
@@ -90,8 +93,23 @@ export const main = async () => {
       await Promise.all(bets);
     }
   });
+
+  api.disconnect();
+
+  return 'ok';
 };
 
-main();
+async function run() {
+  while (true) {
+    try {
+      await main();
+    } catch (err) {
+      console.error(err);
+      break;
+    }
+  }
 
-while (true);
+  return 'program stoped';
+}
+
+run().then(console.log);
