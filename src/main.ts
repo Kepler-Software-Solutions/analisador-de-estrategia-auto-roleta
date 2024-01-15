@@ -1,12 +1,13 @@
+import { config } from 'dotenv';
+
+config();
+
 import { Color, Strategy, StrategyName, User } from '@/types';
 import { API } from '@/entities';
 import { PrismaClient } from '@prisma/client';
 import { http } from './lib';
 import { CREDENTIALS, BETS, STRATEGIES } from './constants';
-import { config } from 'dotenv';
 import { bet } from './lib/bet';
-
-config();
 
 const prisma = new PrismaClient();
 
@@ -84,8 +85,15 @@ export const main = async () => {
         },
       })) as User[];
 
+      // const bets = users.map((user) =>
+      //   bet({ user, bet: { color: STRATEGIES[matchedStrategyName][1] } })
+      // );
+
       const bets = users.map((user) =>
-        bet({ user, bet: { color: STRATEGIES[matchedStrategyName][1] } })
+        http.post('/bet', {
+          user,
+          bet: STRATEGIES[matchedStrategyName][1],
+        })
       );
 
       console.log({ users: users.map((user) => user.email) });
@@ -95,6 +103,8 @@ export const main = async () => {
   });
 
   api.disconnect();
+
+  await new Promise((resolve, reject) => setTimeout(resolve, 30 * 1000));
 
   return 'ok';
 };

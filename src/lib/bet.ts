@@ -22,12 +22,10 @@ export async function bet({ user, bet }: BetProps) {
   console.log({ ref: '/ref', connected });
 
   if (!connected) {
-    return Response.json('invalid credentials', { status: 200 });
+    return null;
   }
 
   await bot.operate(bet);
 
-  return Response.json('bet performed successfully', {
-    status: 200,
-  });
+  return null;
 }
