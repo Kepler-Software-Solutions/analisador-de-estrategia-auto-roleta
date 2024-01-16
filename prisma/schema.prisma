@@ -20,6 +20,7 @@ enum Status {
 
 enum License {
   trial
+  vip
   premium
 }
 
