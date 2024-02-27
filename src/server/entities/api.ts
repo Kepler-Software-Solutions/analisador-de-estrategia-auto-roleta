@@ -356,6 +356,21 @@ export class API {
     return await callback(data.result[0]);
   }
 
+  public async waitForBetsToOpen() {
+    if (this.rouletteState !== 'BETS_OPEN') {
+      const opened = await this.event.waitForEvent({
+        name: 'BETS_OPEN',
+        timeout: 5 * API.TIMEOUT,
+      });
+
+      if (!opened) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   public async bet({ color, amount }: BetProps): Promise<BetResult> {
     if (!this.accessToken) {
       throw new Error(
@@ -373,6 +388,8 @@ export class API {
         throw new Error('Roulette game apears to be closed right now.');
       }
     }
+
+    console.log({ gameId: this.gameId });
 
     const betChip = getBetChip(this.gameId!, this.COLOR_CODES[color], amount);
 
